@@ -59,7 +59,7 @@ def Start_GetArgv():# 获取参数,判断处理模式
     if len(argv) != 1:
         Key = ['filepath','filename','number','categoryname','animename']
         # 
-        #ComKey = ['help','update','fixSE']
+        ComKey = ['help','update','fixSE']
         for i in Key:
             globals()[i] = None
             try:
