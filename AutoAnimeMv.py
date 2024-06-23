@@ -13,7 +13,7 @@ from requests import get,post,exceptions # 网络部分
 #from random import randint # 随机数生成
 #from threading import Thread # 多线程
 from importlib import import_module # 动态加载模块
-#Start 开始部分进行程序的初始化 
+#Start 开始部分进行程序的初始化
 
 def Start_PATH():# 初始化
         # 版本 数据库缓存 Api数据缓存 Log数据集 分隔符
@@ -36,7 +36,7 @@ def Start_PATH():# 初始化
         USETMDBAPI = True # 使用TMDBApi
         USELINK = False # 使用硬链接开关
         JELLYFINFORMAT = False # jellyfin 使用 ISO/639 标准 简体和繁体都使用chi做标识\
-        USETITLTOEP = False # 给每个番剧视频加上番剧Title 
+        USETITLTOEP = False # 给每个番剧视频加上番剧Title
         LINKFAILSUSEMOVEFLAGS = False #硬链接失败时使用MOVE
         PRINTLOGFLAG = True # 打印log开关
         RMLOGSFLAG = '7' # 日志文件超时删除,填数字代表删除多久前的
@@ -65,10 +65,10 @@ def Start_GetArgv():# 获取参数,判断处理模式
             try:
                 globals()[i] = argv[argv.index(f'--{i}')+1]
             except ValueError:
-                pass  
-        
+                pass
+
         Auxiliary_Log(f'filepath:{filepath} filename:{filename} number:{number} categoryname:{categoryname}')
-        if filepath and path.exists(filepath):    
+        if filepath and path.exists(filepath):
             if (filename and number):
                 return filepath,filename,number
             else:
@@ -76,7 +76,7 @@ def Start_GetArgv():# 获取参数,判断处理模式
         elif argv[1] in ComKey:
             pass
     Auxiliary_Help()
-        
+
 # Processing 进行程序的开始工作,进行核心处理
 def Processing_Mode(ArgvData:list):# 模式选择
     ArgvNumber = len(ArgvData)
@@ -102,7 +102,7 @@ def Processing_Mode(ArgvData:list):# 模式选择
             Auxiliary_Exit('没有有效的番剧文件')
     else:
         Auxiliary_Exit(f'不存在 {Path} 目录')
-   
+
 def Processing_Main(LorT):# 核心处理
     if type(LorT) == tuple: # (视频文件列表,字幕文件列表)
         for FileList in LorT:
@@ -111,6 +111,9 @@ def Processing_Main(LorT):# 核心处理
                 flag = Processing_Identification(File)
                 if flag == None:
                     break
+                if flag == 'SKIP':
+                    Auxiliary_Log(f'无法识别，跳过当前文件: {File}', 'WARNING')
+                    continue
                 SE,EP,RAWSE,RAWEP,RAWName = flag
                 if Auxiliary_FileType(File) != 'ASS':
                     ASSList = Auxiliary_IDEASS(RAWName,RAWSE,RAWEP,LorT[1])
@@ -121,6 +124,9 @@ def Processing_Main(LorT):# 核心处理
             flag = Processing_Identification(File)
             if flag == None:
                 break
+            if flag == 'SKIP':
+                Auxiliary_Log(f'无法识别，跳过当前文件: {File}', 'WARNING')
+                continue
             SE,EP,RAWSE,RAWEP,RAWName = flag
             ApiName = Auxiliary_Api(RAWName)
             Sorting_Mv(File,RAWName,SE,EP,None,ApiName)
@@ -131,6 +137,8 @@ def Processing_Identification(File:str):# 识别
     if AnimeFileCheckFlag == True:
         #Auxiliary_Log('-'*80,'INFO')
         RAWEP = Auxiliary_IDEEP(NewFile)
+        if RAWEP == None:
+            return 'SKIP'
         Auxiliary_Log(f'匹配出的剧集 ==> {RAWEP}','INFO')
         RAWName = Auxiliary_IDEVDName(NewFile,RAWEP)
         EP = '0' + RAWEP if (len(RAWEP) < 2 or ( '.' in RAWEP and RAWEP[0] != '0')) and (SEEPSINGLECHARACTER == False) else RAWEP# 美化剧集
@@ -172,7 +180,7 @@ def Sorting_Mv(FileName,RAWName,SE,EP,ASSList,ApiName):# 文件处理
         else:
             move(src,dst)
             Auxiliary_Log(f'Move-{dst} << {src}')
-    
+
     CategoryName = CategoryName if CategoryName else ''
     NewDir = f'{Path}{Separator}{CategoryName}{Separator}{ApiName}{Separator}Season{SE}{Separator}' if ApiName != None else f'{Path}{Separator}{CategoryName}{Separator}{RAWName}{Separator}Season{SE}{Separator}'
     NewName = f'S{SE}E{EP}' if USETITLTOEP != True else f'S{SE}E{EP}.{ApiName}'
@@ -192,11 +200,11 @@ def Sorting_Mv(FileName,RAWName,SE,EP,ASSList,ApiName):# 文件处理
     NewName = NewName + Auxiliary_ASSFileCA(FileName) if FileType == '.ass' or FileType == '.str' else NewName
     if path.isfile(f'{NewDir}{NewName}{FileType}') == False or MANDATORYCOVER == True:
         FileML(f'{Path}{Separator}{FileName}',f'{NewDir}{NewName}{FileType}')
-    else: 
+    else:
         Auxiliary_Log(f'{NewDir}{NewName}{FileType}已存在,故跳过','WARNING')
 
 # Auxiliary 其他辅助
-def Auxiliary_Help(): # Help 
+def Auxiliary_Help(): # Help
     global HelpMessages
     Logo = '''     
      █████╗ ██╗   ██╗████████╗ ██████╗  █████╗ ███╗   ██╗██╗███╗   ███╗███████╗███╗   ███╗██╗   ██╗
@@ -233,7 +241,7 @@ def Auxiliary_LoadModule():
                     #ModuleFileList[File[0]] = {'Versions':Module.Versions,'ApplyAccessFun':Module.ApplyAccessFun,'ApplyChangeFun':Module.ApplyChangeFun,'Module':Module,'ReturnFun':ReturnFun}
             #elif File[-1] == '.ini' or File[-1] == '.INI':
         if ModuleFileList != {}:
-            Auxiliary_Log(f'加载{len(ModuleFileList)}个可加载模块 >> {ModuleFileList}')       
+            Auxiliary_Log(f'加载{len(ModuleFileList)}个可加载模块 >> {ModuleFileList}')
         else:
             Auxiliary_Log('无扩展')
     else:
@@ -246,7 +254,7 @@ def Auxiliary_READConfig():# 读取外置Config.ini文件并更新
             Auxiliary_Log('正在读取外置ini文件','INFO')
             ConfigMagdict = {}
             for i in ff.readlines():
-                i = i.strip('\n') 
+                i = i.strip('\n')
                 if findall('\[(#.*?)\]',i) != []:
                     KeyName = findall('\[(#.*?)\]',i)[0]
                     ConfigMagdict[KeyName] = {}
@@ -273,7 +281,7 @@ def Auxiliary_Log(Msg,MsgFlag='INFO',flag=None,end='\n'):# 日志
     for OneMsg in Msg:
         Msg = f'[{strftime("%Y-%m-%d %H:%M:%S",localtime(time()))}] {MsgFlag}: {OneMsg}'
         if PRINTLOGFLAG == True or flag == 'PRINT':
-            print(Msg,end=end)         
+            print(Msg,end=end)
         LogData = LogData + '\n' + Msg
 
 def Auxiliary_DeleteLogs():# 日志清理
@@ -297,7 +305,7 @@ def Auxiliary_WriteLog():# 写log文件
 
 def Auxiliary_UniformOTSTR(File):# 统一意外字符
     NewFile = convert(File,'zh-hans')# 繁化简
-    NewUSTRFile = sub(r',|，| ','-',NewFile,flags=I) 
+    NewUSTRFile = sub(r',|，| ','-',NewFile,flags=I)
     NewUSTRFile = sub('[^a-z0-9\s&/:：.\-\(\)（）《》\u4e00-\u9fa5\u3040-\u309F\u30A0-\u30FF\u31F0-\u31FF]','=',NewUSTRFile,flags=I)
     #异种剧集统一
     OtEpisodesMatchData = ['第(\d{1,4})集','(\d{1,4})集','第(\d{1,4})话','(\d{1,4})END','(\d{1,4}) END','(\d{1,4})E']
@@ -356,7 +364,8 @@ def Auxiliary_IDEEP(File):# 识别剧集
         else:
             Episodes = findall(r'[^0-9a-z.\u4e00-\u9fa5\u0800-\u4e00]([0-9]{1,4})[^0-9a-uw-z.\u4e00-\u9fa5\u0800-\u4e00]',File[::-1],flags=I)[0][::-1].strip(" =-_eEv")
     except IndexError:
-        Auxiliary_Exit('未匹配出剧集,请检查(程序目前不支持电影动漫)')
+        Auxiliary_Log('未匹配出剧集,请检查(程序目前不支持电影动漫)')
+        return None
     else:
         #Auxiliary_Log(f'匹配出的剧集 ==> {Episodes}','INFO')
         return Episodes
@@ -364,7 +373,7 @@ def Auxiliary_IDEEP(File):# 识别剧集
 def Auxiliary_RMSubtitlingTeam(File):# 剔除字幕组信息
     #File = File.strip('=')
     if File[0] == '《':# 判断有无字幕组信息
-        File = sub(r'《|》','',File,flags=I) 
+        File = sub(r'《|》','',File,flags=I)
     else:
         File = sub(r'^=.*?=','',File,flags=I)
     return File
@@ -380,6 +389,9 @@ def Auxiliary_IDEASS(File,SE,EP,ASSList):# 识别当前番剧视频的所属字�
     for ASSFile in ASSList:
         ASSName = Auxiliary_UniformOTSTR(ASSFile)
         ASSEP = Auxiliary_IDEEP(ASSName)
+        if ASSEP == None:
+            Auxiliary_Log(f'无法识别，跳过当前文件: {File}', 'WARNING')
+            continue
         if File in ASSName and EP == ASSEP and SE in ASSName:
             ASSFileList.append(ASSFile)
     ASSFileList = None if ASSFileList == [] else ASSFileList
@@ -436,7 +448,7 @@ def Auxiliary_AnimeFileCheck(File):# 检查番剧文件
     for i in Checklist:
         if search(f'[-=]{i}[-=]',File,flags=I) != None:
             return i
-    return True         
+    return True
 
 def Auxiliary_ASSFileCA(ASSFileName):# 字幕文件的语言分类
     SubtitleList = [['简','簡','簡體','sc','chs','GB'],['繁','tc','cht','BIG5'],['日','jp']]
@@ -468,7 +480,7 @@ def Auxiliary_Http(Url,flag='GET',json=None):# 网络
         headers['Authorization'] = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0MjkxYzA0NGYyZTNmMThhYzQ3NzNjNzU1YzM3NzA5OSIsInN1YiI6IjY0MjZlMTg1YTNlNGJhMDExMTQ5OGI2MSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.Q0Rn4QdnCelhzozE07jgUQwJFzdJrLXGhaSBphnzYuQ"
     try:
         if flag != 'GET':
-            HttpData = post(Url,json,headers=headers) 
+            HttpData = post(Url,json,headers=headers)
         else:
             HttpData = get(Url,headers=headers)
     except exceptions.ConnectionError:
@@ -492,7 +504,7 @@ def Auxiliary_Http(Url,flag='GET',json=None):# 网络
 #     else:
 #         Auxiliary_Exit('更新数据存在问题')
 
-def Auxiliary_Api(Name):   
+def Auxiliary_Api(Name):
     def BgmApi(Name):# BgmApi相关,返回一个标准的中文名称
         global USEBGMAPI,BgmAPIDataCache
         if USEBGMAPI == True:
@@ -541,10 +553,10 @@ def Auxiliary_Api(Name):
             return None
 
     if search(r'([\u4e00-\u9fa5]+)',Name.replace('=','').replace('-',''),flags=I) != None: # 获取匹配到的汉字
-        Name = search(r'([\u4e00-\u9fa5]+)',Name.replace('=','').replace('-',''),flags=I).group(1) 
+        Name = search(r'([\u4e00-\u9fa5]+)',Name.replace('=','').replace('-',''),flags=I).group(1)
         BGMApiName = BgmApi(Name)
         TMDBApiName = TMDBApi(BGMApiName if BGMApiName != None else Name)
-               
+
     else:
         BGMApiName = BgmApi(Name)
         TMDBApiName = TMDBApi(BGMApiName if BGMApiName != None else Name)
