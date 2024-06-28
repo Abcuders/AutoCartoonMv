@@ -15,49 +15,53 @@ from requests import get,post,exceptions # 网络部分
 from importlib import import_module # 动态加载模块
 #Start 开始部分进行程序的初始化 
 
-def Start_PATH():# 初始化
-        # 版本 数据库缓存 Api数据缓存 Log数据集 分隔符
-        global Versions,AimeListCache,BgmAPIDataCache,TMDBAPIDataCache,LogData,Separator,Proxy,TgBotMsgData,PyPath
-        Versions = '3.1.2'
-        AimeListCache = None
-        BgmAPIDataCache = {}
-        TMDBAPIDataCache = {}
-        LogData = f'\n\n[{strftime("%Y-%m-%d %H:%M:%S",localtime(time()))}] INFO: Running....'
-        Separator = '\\' if name == 'nt' else '/'
-        TgBotMsgData = ''
-        PyPath = __file__.replace('AutoAnimeMv.py','').strip(' ')
+def Start_PATH():
+    '''初始化'''
+    # 版本 数据库缓存 Api数据缓存 Log数据集 分隔符
+    global Versions,AimeListCache,BgmAPIDataCache,TMDBAPIDataCache,LogData,Separator,Proxy,TgBotMsgData,PyPath
+    Versions = '3.2.3'
+    AimeListCache = None
+    BgmAPIDataCache = {}
+    TMDBAPIDataCache = {}
+    LogData = f'\n\n[{strftime("%Y-%m-%d %H:%M:%S",localtime(time()))}] INFO: Running....'
+    Separator = '\\' if name == 'nt' else '/'
+    TgBotMsgData = ''
+    PyPath = __file__.replace('AutoAnimeMv.py','').strip(' ')
 
-        global USEMODULE,HTTPPROXY,HTTPSPROXY,ALLPROXY,USEBGMAPI,USETMDBAPI,USELINK,LINKFAILSUSEMOVEFLAGS,USETITLTOEP,PRINTLOGFLAG,RMLOGSFLAG,USEBOTFLAG,TIMELAPSE,SEEPSINGLECHARACTER,JELLYFINFORMAT,NOTLOADEXTLIST,MANDATORYCOVER
-        USEMODULE = None
-        HTTPPROXY = '' # Http代理
-        HTTPSPROXY = '' # Https代理
-        ALLPROXY = '' # 全部代理
-        USEBGMAPI = True # 使用BgmApi
-        USETMDBAPI = True # 使用TMDBApi
-        USELINK = False # 使用硬链接开关
-        JELLYFINFORMAT = False # jellyfin 使用 ISO/639 标准 简体和繁体都使用chi做标识\
-        USETITLTOEP = False # 给每个番剧视频加上番剧Title 
-        LINKFAILSUSEMOVEFLAGS = False #硬链接失败时使用MOVE
-        PRINTLOGFLAG = True # 打印log开关
-        RMLOGSFLAG = '7' # 日志文件超时删除,填数字代表删除多久前的
-        USEBOTFLAG = False # 使用TgBot进行通知
-        TIMELAPSE = 0 # 延时处理番剧
-        SEEPSINGLECHARACTER = False # SE EP单字符模式 01 -> 1
-        NOTLOADEXTLIST = [] # 模块排除列表,格式 exmaple.py,XXXX.py + ,
-        MANDATORYCOVER = False # 强制覆盖文件
+    global USEMODULE,HTTPPROXY,HTTPSPROXY,ALLPROXY,USEBGMAPI,USETMDBAPI,USELINK,LINKFAILSUSEMOVEFLAGS,USETITLTOEP,PRINTLOGFLAG,RMLOGSFLAG,USEBOTFLAG,TIMELAPSE,SEEPSINGLECHARACTER,JELLYFINFORMAT,NOTLOADEXTLIST,MANDATORYCOVER,NETERRRECTRYTIMS
+    USEMODULE = None
+    HTTPPROXY = '' # Http代理
+    HTTPSPROXY = '' # Https代理
+    ALLPROXY = '' # 全部代理
+    USEBGMAPI = True # 使用BgmApi
+    USETMDBAPI = True # 使用TMDBApi
+    USELINK = False # 使用硬链接开关
+    JELLYFINFORMAT = False # jellyfin 使用 ISO/639 标准 简体和繁体都使用chi做标识\
+    USETITLTOEP = False # 给每个番剧视频加上番剧Title 
+    LINKFAILSUSEMOVEFLAGS = False #硬链接失败时使用MOVE
+    PRINTLOGFLAG = True # 打印log开关
+    RMLOGSFLAG = 7 # 日志文件超时删除,填数字代表删除多久前的
+    USEBOTFLAG = False # 使用TgBot进行通知
+    TIMELAPSE = 0 # 延时处理番剧
+    SEEPSINGLECHARACTER = False # SE EP单字符模式 01 -> 1
+    NOTLOADEXTLIST = [] # 模块排除列表,格式 exmaple.py,XXXX.py + ,
+    MANDATORYCOVER = False # 强制覆盖文件
+    NETERRRECTRYTIMS = 1 # 网络请求错误时的重试次数
 
-        Auxiliary_READConfig()
-        Auxiliary_ApplyConfig()
-        Auxiliary_Log((f'当前工具版本为{Versions}',f'当前操作系统识别码为{name},posix/nt/java对应linux/windows/java虚拟机'),'INFO')
-        if int(TIMELAPSE) != 0:
-            Auxiliary_Log(f'正在{TIMELAPSE}秒延时中')
-            sleep(int(TIMELAPSE))
-        if USEMODULE == True:
-            Auxiliary_LoadModule()
+    Auxiliary_READConfig()
+    Auxiliary_ApplyConfig()
+    Auxiliary_Log((f'当前工具版本为{Versions}',f'当前操作系统识别码为{name},posix/nt/java对应linux/windows/java虚拟机'),'INFO')
+    if int(TIMELAPSE) != 0:
+        Auxiliary_Log(f'正在{TIMELAPSE}秒延时中')
+        sleep(int(TIMELAPSE))
+    if USEMODULE == True:
+        Auxiliary_LoadModule()
 
-def Start_GetArgv():# 获取参数,判断处理模式
+def Start_GetArgv():
+    '''获取参数,判断处理模式'''
+
     if len(argv) != 1:
-        Key = ['filepath','filename','number','categoryname','animename']
+        Key = ['filepath','filename','number','categoryname','animename','tag']
         # 
         ComKey = ['help','update','fixSE']
         for i in Key:
@@ -78,7 +82,9 @@ def Start_GetArgv():# 获取参数,判断处理模式
     Auxiliary_Help()
         
 # Processing 进行程序的开始工作,进行核心处理
-def Processing_Mode(ArgvData:list):# 模式选择
+def Processing_Mode(ArgvData:list):
+    '''模式选择'''
+
     ArgvNumber = len(ArgvData)
     global Path,CategoryName
     Path = filepath
@@ -103,7 +109,9 @@ def Processing_Mode(ArgvData:list):# 模式选择
     else:
         Auxiliary_Exit(f'不存在 {Path} 目录')
    
-def Processing_Main(LorT):# 核心处理
+def Processing_Main(LorT):
+    '''核心处理'''
+
     if type(LorT) == tuple: # (视频文件列表,字幕文件列表)
         for FileList in LorT:
             for File in FileList:
@@ -125,35 +133,44 @@ def Processing_Main(LorT):# 核心处理
             ApiName = Auxiliary_Api(RAWName)
             Sorting_Mv(File,RAWName,SE,EP,None,ApiName)
 
-def Processing_Identification(File:str):# 识别
+def Processing_Identification(File:str):
+    '''识别'''
+
     NewFile = Auxiliary_RMSubtitlingTeam(Auxiliary_RMOTSTR(Auxiliary_UniformOTSTR(File)))# 字符的统一加剔除
     AnimeFileCheckFlag = Auxiliary_AnimeFileCheck(NewFile)
     if AnimeFileCheckFlag == True:
-        #Auxiliary_Log('-'*80,'INFO')
-        RAWEP = Auxiliary_IDEEP(NewFile)
-        Auxiliary_Log(f'匹配出的剧集 ==> {RAWEP}','INFO')
-        RAWName = Auxiliary_IDEVDName(NewFile,RAWEP)
-        EP = '0' + RAWEP if (len(RAWEP) < 2 or ( '.' in RAWEP and RAWEP[0] != '0')) and (SEEPSINGLECHARACTER == False) else RAWEP# 美化剧集
-        if '.' in RAWEP or RAWEP == '0' or RAWEP == '00':
-            SE = '00' if SEEPSINGLECHARACTER == False else '0'
-            RAWSE = ''
-            Auxiliary_Log(f'特殊剧季 ==> {SE}','INFO')
-            SeasonMatchData = r'(季(.*?)第)|(([0-9]{0,1}[0-9]{1})S)|(([0-9]{0,1}[0-9]{1})nosaeS)|(([0-9]{0,1}[0-9]{1}) nosaeS)|(([0-9]{0,1}[0-9]{1})-nosaeS)|(nosaeS-dn([0-9]{1}))'
-            RAWName = sub(SeasonMatchData,'',RAWName[::-1],flags=I)[::-1].strip('-=')
+        Auxiliary_Log('-'*80,'INFO')
+        try:
+            RAWEP = Auxiliary_IDEEP(NewFile)
+        except:
+            Auxiliary_Log(f'{File}文件无法处理故跳过','WARNIG')
+            return None
         else:
-            SE,Name,RAWSE = Auxiliary_IDESE(RAWName)
-            Auxiliary_Log(f'匹配出的剧季 ==> {RAWSE}','INFO')
-            RAWName = RAWName if Name == None else Name
-            SE = '0' + SE if len(SE) == 1 and SEEPSINGLECHARACTER == False else SE
-        if SEEPSINGLECHARACTER == True:
-            SE = SE.lstrip('0')
-            EP = EP.lstrip('0')
-        return SE,EP,RAWSE,RAWEP,RAWName
+            Auxiliary_Log(f'匹配出的剧集 ==> {RAWEP}','INFO')
+            RAWName = Auxiliary_IDEVDName(NewFile,RAWEP)
+            EP = '0' + RAWEP if (len(RAWEP) < 2 or ( '.' in RAWEP and RAWEP[0] != '0')) and (SEEPSINGLECHARACTER == False) else RAWEP# 美化剧集
+            if '.' in RAWEP or RAWEP == '0' or RAWEP == '00':
+                SE = '00' if SEEPSINGLECHARACTER == False else '0'
+                RAWSE = ''
+                Auxiliary_Log(f'特殊剧季 ==> {SE}','INFO')
+                SeasonMatchData = r'(季(.*?)第)|(([0-9]{0,1}[0-9]{1})S)|(([0-9]{0,1}[0-9]{1})nosaeS)|(([0-9]{0,1}[0-9]{1}) nosaeS)|(([0-9]{0,1}[0-9]{1})-nosaeS)|(nosaeS-dn([0-9]{1}))'
+                RAWName = sub(SeasonMatchData,'',RAWName[::-1],flags=I)[::-1].strip('-=')
+            else:
+                SE,Name,RAWSE = Auxiliary_IDESE(RAWName)
+                Auxiliary_Log(f'匹配出的剧季 ==> {RAWSE}','INFO')
+                RAWName = RAWName if Name == None else Name
+                SE = '0' + SE if len(SE) == 1 and SEEPSINGLECHARACTER == False else SE
+            if SEEPSINGLECHARACTER == True:
+                SE = SE.lstrip('0')
+                EP = EP.lstrip('0')
+            return SE,EP,RAWSE,RAWEP,RAWName
     else:
         Auxiliary_Log(f'当前文件属于{AnimeFileCheckFlag},跳过处理','INFO')
 
 # Sorting 进行整理工作
-def Sorting_Mv(FileName,RAWName,SE,EP,ASSList,ApiName):# 文件处理
+def Sorting_Mv(FileName,RAWName,SE,EP,ASSList,ApiName):
+    '''文件处理'''
+
     global CategoryName
     def FileML(src,dst):
         global TgBotMsgData
@@ -184,16 +201,16 @@ def Sorting_Mv(FileName,RAWName,SE,EP,ASSList,ApiName):# 文件处理
         for ASSFile in ASSList:
             FileType = path.splitext(ASSFile)[1].lower()
             NewASSName = NewName + Auxiliary_ASSFileCA(ASSFile)
-            if path.isfile(f'{NewDir}{NewASSName}{FileType}') == False or MANDATORYCOVER == True:
-                FileML(f'{Path}{Separator}{ASSFile}',f'{NewDir}{NewASSName}{FileType}')
+            if path.isfile((X := f'{NewDir}{NewASSName}{FileType}')) == False or MANDATORYCOVER == True:
+                FileML(f'{Path}{Separator}{ASSFile}',X)
             else:
                 Auxiliary_Log(f'{NewDir}{NewASSName}{FileType}已存在,故跳过','WARNING')
     FileType = path.splitext(FileName)[1].lower()
     NewName = NewName + Auxiliary_ASSFileCA(FileName) if FileType == '.ass' or FileType == '.str' else NewName
-    if path.isfile(f'{NewDir}{NewName}{FileType}') == False or MANDATORYCOVER == True:
-        FileML(f'{Path}{Separator}{FileName}',f'{NewDir}{NewName}{FileType}')
+    if path.isfile((X := f'{NewDir}{NewName}{FileType}')) == False or MANDATORYCOVER == True:
+        FileML(f'{Path}{Separator}{FileName}',X)
     else: 
-        Auxiliary_Log(f'{NewDir}{NewName}{FileType}已存在,故跳过','WARNING')
+        Auxiliary_Log(f'{X}已存在,故跳过','WARNING')
 
 # Auxiliary 其他辅助
 def Auxiliary_Help(): # Help 
@@ -239,16 +256,18 @@ def Auxiliary_LoadModule():
     else:
         Auxiliary_Log('不存在扩展文件夹 ./Ext')
 
-def Auxiliary_READConfig():# 读取外置Config.ini文件并更新
+def Auxiliary_READConfig():
+    '''读取外置Config.ini文件并更新'''
+
     global ConfigMagdict
-    if path.isfile(f'{PyPath}{Separator}config.ini'):
-        with open(f'{PyPath}{Separator}config.ini','r',encoding='UTF-8') as ff:
+    if path.isfile((X := f'{PyPath}{Separator}config.ini')):
+        with open(X,'r',encoding='UTF-8') as ff:
             Auxiliary_Log('正在读取外置ini文件','INFO')
             ConfigMagdict = {}
             for i in ff.readlines():
                 i = i.strip('\n') 
-                if findall('\[(#.*?)\]',i) != []:
-                    KeyName = findall('\[(#.*?)\]',i)[0]
+                if findall(r'\[(#.*?)\]',i) != []:
+                    KeyName = findall(r'\[(#.*?)\]',i)[0]
                     ConfigMagdict[KeyName] = {}
                 elif i != '' and i[0] != '#':
                     ConfigItem = i.split("=",1)
@@ -267,16 +286,20 @@ def Auxiliary_ApplyConfig():
             exec(f'global {ConfigName};{ConfigName} = {ConfigValue}')
         Auxiliary_PROXY()
 
-def Auxiliary_Log(Msg,MsgFlag='INFO',flag=None,end='\n'):# 日志
+def Auxiliary_Log(Msg:str,MsgFlag='INFO',flag=None,end='\n'):
+    '''日志'''
+
     global LogData,PRINTLOGFLAG
     Msg = Msg if type(Msg) == tuple else (Msg,)
     for OneMsg in Msg:
         Msg = f'[{strftime("%Y-%m-%d %H:%M:%S",localtime(time()))}] {MsgFlag}: {OneMsg}'
         if PRINTLOGFLAG == True or flag == 'PRINT':
             print(Msg,end=end)         
-        LogData = LogData + '\n' + Msg
+        LogData = '' + Msg if 'LogData' not in globals() else LogData + '\n' + Msg
 
-def Auxiliary_DeleteLogs():# 日志清理
+def Auxiliary_DeleteLogs():
+    '''日志清理'''
+
     RmLogsList = []
     if RMLOGSFLAG != False and 'LogsFileList' in globals() and LogsFileList != []:
         ToDay = datetime.strptime(datetime.now().strftime('%Y-%m-%d'),"%Y-%m-%d").date()
@@ -288,19 +311,23 @@ def Auxiliary_DeleteLogs():# 日志清理
         if RmLogsList != []:
             Auxiliary_Log(f'清理了保存时间达到和超过{RMLOGSFLAG}天的日志文件 << {RmLogsList}')
 
-def Auxiliary_WriteLog():# 写log文件
+def Auxiliary_WriteLog():
+    '''写log文件'''
+
     LogPath = filepath if 'filepath' in globals() and path.exists(filepath) == True else PyPath
     if LogPath == PyPath:
         Auxiliary_Log(f'Log文件保存在工具目录下','WARNING')
     with open(f'{LogPath}{Separator}{strftime("%Y-%m-%d",localtime(time()))}.log','a+',encoding='UTF-8') as LogFile:
         LogFile.write(LogData)
 
-def Auxiliary_UniformOTSTR(File):# 统一意外字符
+def Auxiliary_UniformOTSTR(File):
+    '''统一意外字符'''
+
     NewFile = convert(File,'zh-hans')# 繁化简
     NewUSTRFile = sub(r',|，| ','-',NewFile,flags=I) 
-    NewUSTRFile = sub('[^a-z0-9\s&/:：.\-\(\)（）《》\u4e00-\u9fa5\u3040-\u309F\u30A0-\u30FF\u31F0-\u31FF]','=',NewUSTRFile,flags=I)
+    NewUSTRFile = sub(r'[^a-z0-9\s&/:：.\-\(\)（）《》\u4e00-\u9fa5\u3040-\u309F\u30A0-\u30FF\u31F0-\u31FF]','=',NewUSTRFile,flags=I)
     #异种剧集统一
-    OtEpisodesMatchData = ['第(\d{1,4})集','(\d{1,4})集','第(\d{1,4})话','(\d{1,4})END','(\d{1,4}) END','(\d{1,4})E']
+    OtEpisodesMatchData = [r'第(\d{1,4})集',r'(\d{1,4})集',r'第(\d{1,4})话',r'(\d{1,4})END',r'(\d{1,4}) END',r'(\d{1,4})E']
     for i in OtEpisodesMatchData:
         i = f'[^0-9a-z]{i}[^0-9a-z]'
         if search(i,NewUSTRFile,flags=I) != None:
@@ -308,24 +335,28 @@ def Auxiliary_UniformOTSTR(File):# 统一意外字符
             NewUSTRFile = NewUSTRFile.replace(a.group(),'='+a.group(1).strip('\u4e00-\u9fa5')+'=')
     return NewUSTRFile
 
-def Auxiliary_RMOTSTR(File):# 剔除意外字符
+def Auxiliary_RMOTSTR(File):
+    '''剔除意外字符'''
+
     global FuzzyMatchData
     global PreciseMatchData
     NewPSTRFile = File
     #匹配待去除列表
     FuzzyMatchData = [r'(.*?|=)月新番(.*?|=)',r'\d{4}.\d{2}.\d{2}',r'20\d{2}',r'v[2-9]',r'\d{4}年\d{1,2}月番']
     #精准待去除列表
-    PreciseMatchData = ['仅限港澳台地区','年龄限制版','国漫','x264','1080p','720p','4k','\(-\)','（-）']
+    PreciseMatchData = [r'仅限港澳台地区',r'年龄限制版',r'国漫',r'x264',r'1080p',r'720p',r'4k',r'\(-\)',r'（-）']
     for i in PreciseMatchData:
         NewPSTRFile = sub(r'%s'%i,'=',NewPSTRFile,flags=I)
     for i in FuzzyMatchData:
         NewPSTRFile = sub(i,'=',NewPSTRFile,flags=I)
     return NewPSTRFile
 
-def Auxiliary_IDESE(File):# 识别剧季并截断Name
+def Auxiliary_IDESE(File):
+    '''识别剧季并截断Name'''
+
     SeasonMatchData = r'(季(.*?)第)|(([0-9]{0,1}[0-9]{1})S)|(([0-9]{0,1}[0-9]{1})nosaeS)|(([0-9]{0,1}[0-9]{1}) nosaeS)|(([0-9]{0,1}[0-9]{1})-nosaeS)|(nosaeS-dn([0-9]{1}))|(nosaeS-dr([0-9]{1}))'
-    if search(SeasonMatchData,File[::-1],flags=I) != None:
-        SEData = findall(SeasonMatchData,File[::-1],flags=I)
+    if search(X := SeasonMatchData,File[::-1],flags=I) != None:
+        SEData = findall(X)
         SENamelist = []
         SEList = []
         for sedata in SEData:
@@ -349,19 +380,24 @@ def Auxiliary_IDESE(File):# 识别剧季并截断Name
     else:
         return '01',File,''
 
-def Auxiliary_IDEEP(File):# 识别剧集
+def Auxiliary_IDEEP(File):
+    '''识别剧集'''
+
     try:
-        if findall(r'[^0-9a-z.\u4e00-\u9fa5\u0800-\u4e00](\d{1}\.[0-9]{1,4})[^0-9a-uw-z.\u4e00-\u9fa5\u0800-\u4e00]',File[::-1],flags=I) != []:
-            Episodes = findall(r'[^0-9a-z.\u4e00-\u9fa5\u0800-\u4e00](\d{1}\.[0-9]{1,4})[^0-9a-uw-z.\u4e00-\u9fa5\u0800-\u4e00]',File[::-1],flags=I)[0][::-1].strip(" =-_eEv")
+        if (X := findall(r'[^0-9a-z.\u4e00-\u9fa5\u0800-\u4e00](\d{1}\.[0-9]{1,4})[^0-9a-uw-z.\u4e00-\u9fa5\u0800-\u4e00]',File[::-1],flags=I)) != []:
+            Episodes = X[0][::-1].strip(" =-_eEv")
         else:
             Episodes = findall(r'[^0-9a-z.\u4e00-\u9fa5\u0800-\u4e00]([0-9]{1,4})[^0-9a-uw-z.\u4e00-\u9fa5\u0800-\u4e00]',File[::-1],flags=I)[0][::-1].strip(" =-_eEv")
     except IndexError:
-        Auxiliary_Exit('未匹配出剧集,请检查(程序目前不支持电影动漫)')
+        Auxiliary_Log('未匹配出剧集,请检查(程序目前不支持电影动漫)','WARNING')
+        raise Exception()
     else:
         #Auxiliary_Log(f'匹配出的剧集 ==> {Episodes}','INFO')
         return Episodes
 
-def Auxiliary_RMSubtitlingTeam(File):# 剔除字幕组信息
+def Auxiliary_RMSubtitlingTeam(File):
+    '''剔除字幕组信息'''
+
     #File = File.strip('=')
     if File[0] == '《':# 判断有无字幕组信息
         File = sub(r'《|》','',File,flags=I) 
@@ -369,13 +405,17 @@ def Auxiliary_RMSubtitlingTeam(File):# 剔除字幕组信息
         File = sub(r'^=.*?=','',File,flags=I)
     return File
 
-def Auxiliary_IDEVDName(File,RAWEP):# 识别剧名
+def Auxiliary_IDEVDName(File,RAWEP): 
+    '''识别剧名'''
+
     #VDName = sub(r'.*%s'%RAWEP[::-1],'',File[::-1],count=0,flags=I).strip('=-=-=-')[::-1]
     VDName = search(r'[=|-]%s[=|-](.*)'%RAWEP[::-1],File[::-1],flags=I).group(1).strip('=-=-=-')[::-1]
     Auxiliary_Log(f'通过剧集截断文件名 ==> {VDName}','INFO')
     return VDName
 
-def Auxiliary_IDEASS(File,SE,EP,ASSList):# 识别当前番剧视频的所属字幕文件
+def Auxiliary_IDEASS(File,SE,EP,ASSList):
+    '''识别当前番剧视频的所属字幕文件'''
+
     ASSFileList = []
     for ASSFile in ASSList:
         ASSName = Auxiliary_UniformOTSTR(ASSFile)
@@ -385,19 +425,21 @@ def Auxiliary_IDEASS(File,SE,EP,ASSList):# 识别当前番剧视频的所属字�
     ASSFileList = None if ASSFileList == [] else ASSFileList
     return ASSFileList
 
-def Auxiliary_FileType(FileName):# 识别文件类型
-    SuffixList = ['.ass','.srt','.mp4','.mkv','.log']
-    for type in SuffixList:
-        if match(type[::-1],FileName[::-1],flags=I) != None:
-            if type == '.ass' or type == '.srt':
-                return 'ASS'
-            elif type == '.log':
-                return 'LOG'
-            elif type == '.mp4' or type == '.mkv':
-                return 'MP4'
+def Auxiliary_FileType(FileName): 
+    '''识别文件类型'''
 
-def Auxiliary_ScanDIR(Dir,Flag=0):# 扫描文件目录,返回文件列表
-    def Scan(Dir,File):
+    SuffixList = {'.ass':'ASS','.srt':'ASS','.mp4':'MP4','.mkv':'MP4','.log':'LOG'}
+    for FileType in SuffixList:
+        if match(FileType[::-1],FileName[::-1],flags=I) != None:
+            try :
+                return SuffixList['FileType']
+            except :
+                Auxiliary_Exit('文件类型不正确')
+
+def Auxiliary_ScanDIR(Dir,Flag=0) -> list: 
+    '''扫描文件目录,返回文件列表'''
+
+    def Scan(File):
         for ii in SuffixList:
                 if match(ii[::-1],File[::-1],flags=I) != None:
                     if ii == '.ass' or ii == '.srt':
@@ -414,9 +456,9 @@ def Auxiliary_ScanDIR(Dir,Flag=0):# 扫描文件目录,返回文件列表
     LogsFileList = []
     for File in listdir(Dir):# 扫描目录,并按文件类型分类
         if Flag == 0 and search(r'S\d{1,2}E\d{1,4}',File,flags=I) == None:
-            Scan(Dir,File)
+            Scan(File)
         elif Flag == 1 and search(r'S\d{1,2}E\d{1,4}',File,flags=I) != None:
-            Scan(Dir,File)
+            Scan(File)
 
     if  VDFileList != []:# 判断模式,处理字幕还是视频
         if AssFileList != []:
@@ -431,14 +473,18 @@ def Auxiliary_ScanDIR(Dir,Flag=0):# 扫描文件目录,返回文件列表
     else:
         Auxiliary_Exit('没有任何番剧文件')
 
-def Auxiliary_AnimeFileCheck(File):# 检查番剧文件
+def Auxiliary_AnimeFileCheck(File):
+    '''检查番剧文件'''
+
     Checklist = ['OP','CM','SP','PV']
     for i in Checklist:
         if search(f'[-=]{i}[-=]',File,flags=I) != None:
             return i
     return True         
 
-def Auxiliary_ASSFileCA(ASSFileName):# 字幕文件的语言分类
+def Auxiliary_ASSFileCA(ASSFileName):
+    '''字幕文件的语言分类'''
+
     SubtitleList = [['简','簡','簡體','sc','chs','GB'],['繁','tc','cht','BIG5'],['日','jp']]
     for i in range(len(SubtitleList)):
         for ii in SubtitleList[i]:
@@ -451,7 +497,9 @@ def Auxiliary_ASSFileCA(ASSFileName):# 字幕文件的语言分类
                     return '.jp'
     return '.other'
 
-def Auxiliary_PROXY(): # 代理
+def Auxiliary_PROXY(): 
+    '''代理'''
+
     if 'HTTPPROXY' in globals():
         global HTTPPROXY
         environ['http_proxy'] = HTTPPROXY
@@ -462,38 +510,33 @@ def Auxiliary_PROXY(): # 代理
         global ALLPROXY
         environ['all_proxy'] = ALLPROXY
 
-def Auxiliary_Http(Url,flag='GET',json=None):# 网络
+def Auxiliary_Http(Url,flag='GET',json=None):
+    '''网络'''
+     
     headers = {'User-Agent':f'Abcuders/AutoAnimeMv/{Versions}(https://github.com/Abcuders/AutoAnimeMv)'}
     if 'themoviedb' in Url:
         headers['Authorization'] = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0MjkxYzA0NGYyZTNmMThhYzQ3NzNjNzU1YzM3NzA5OSIsInN1YiI6IjY0MjZlMTg1YTNlNGJhMDExMTQ5OGI2MSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.Q0Rn4QdnCelhzozE07jgUQwJFzdJrLXGhaSBphnzYuQ"
-    try:
-        if flag != 'GET':
-            HttpData = post(Url,json,headers=headers) 
+    for i in range(int(NETERRRECTRYTIMS)+1):    
+        try:
+            if flag != 'GET':
+                HttpData = post(Url,json,headers=headers) 
+            else:
+                HttpData = get(Url,headers=headers)
+            if HttpData.status_code == 200:
+                return HttpData.text.replace(r'\/',r'/')
+        except exceptions.ConnectionError:
+            Auxiliary_Log(f'访问 {Url} 失败,未能获取到内容,请检查您是否启用了系统代理,如是则您应该在此工具中配置代理信息,否则您则需要检查您的网络能否访问','WARING') 
+        except Exception as err:
+            Auxiliary_Log(f'访问 {Url} 失败,未能获取到内容,请检查您的网络 {err}','WARING')    
         else:
-            HttpData = get(Url,headers=headers)
-    except exceptions.ConnectionError:
-        Auxiliary_Exit(f'访问 {Url} 失败,未能获取到内容,请检查您是否启用了系统代理,如是则您应该在此工具中配置代理信息,否则您则需要检查您的网络能否访问')
-    except Exception as err:
-        Auxiliary_Exit(f'访问 {Url} 失败,未能获取到内容,请检查您的网络 {err}')
-    if HttpData.status_code == 200:
-        return HttpData.text
-    else:
-        Auxiliary_Exit('HttpData Status Code != 200')
-
-# def Auxiliary_Updata():# 更新
-#     Updata = Auxiliary_Http('https://raw.githubusercontent.com/Abcuders/AutoAnimeMv/main/AutoAnimeMv.py')
-#     if search(r"Versions = '(\d{1}.\d{1,4}.\d{1,4})'",Updata,flags=I) != None:
-#         if Versions != search(r"Versions = '(\d{1}.\d{1,4}.\d{1,4})'",Updata,flags=I).group(1):
-#             with open('AutoAnimeMv.py','w+',encoding='UTF-8') as UpdataFile:
-#                 UpdataFile.write(Updata)
-#                 Auxiliary_Exit('更新完成')
-#         else:
-#             Auxiliary_Exit('当前即是最新版本')
-#     else:
-#         Auxiliary_Exit('更新数据存在问题')
+            Auxiliary_Log('HttpData Status Code != 200','WARING')
+        Auxiliary_Log(f'第{i+1}/{int(NETERRRECTRYTIMS)+1}次尝试失败','WARING')
+    Auxiliary_Exit('网络错误导致番剧处理失败')
 
 def Auxiliary_Api(Name):   
-    def BgmApi(Name):# BgmApi相关,返回一个标准的中文名称
+    def BgmApi(Name):
+        '''BgmApi相关,返回一个标准的中文名称'''
+
         global USEBGMAPI,BgmAPIDataCache
         if USEBGMAPI == True:
             if Name not in BgmAPIDataCache:
@@ -518,7 +561,9 @@ def Auxiliary_Api(Name):
             Auxiliary_Log('没有使用BgmApi进行检索')
             return None
 
-    def TMDBApi(Name):# TMDBApi相关,返回一个标准的中文名称
+    def TMDBApi(Name): 
+        '''TMDBApi相关,返回一个标准的中文名称'''
+
         global USETMDBAPI,TMDBAPIDataCache
         if USETMDBAPI == True:
             if Name not in TMDBAPIDataCache:
@@ -540,8 +585,8 @@ def Auxiliary_Api(Name):
             Auxiliary_Log('没有使用TMDBApi进行检索')
             return None
 
-    if search(r'([\u4e00-\u9fa5]+)',Name.replace('=','').replace('-',''),flags=I) != None: # 获取匹配到的汉字
-        Name = search(r'([\u4e00-\u9fa5]+)',Name.replace('=','').replace('-',''),flags=I).group(1) 
+    if (X := search(r'([\u4e00-\u9fa5]+)',Name.replace('=','').replace('-',''),flags=I)) != None:#获取匹配到的汉字
+        Name = X.group(1) 
         BGMApiName = BgmApi(Name)
         TMDBApiName = TMDBApi(BGMApiName if BGMApiName != None else Name)
                
@@ -560,7 +605,9 @@ def Auxiliary_Api(Name):
         ApiName = TMDBApiName if TMDBApiName != None else BGMApiName
     return ApiName.replace(' ','') if ApiName != None else ApiName
 
-def Auxiliary_Exit(LogMsg):# 因可预见错误离场
+def Auxiliary_Exit(LogMsg):
+    '''因可预见错误离场'''
+
     Auxiliary_Log(LogMsg,'EXIT',flag='PRINT')
     exit()
 

@@ -1,4 +1,2 @@
-pycryptodome
-qbittorrent_api
-Requests
+requests
 zhconv
