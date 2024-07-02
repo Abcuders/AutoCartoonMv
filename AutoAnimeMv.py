@@ -19,7 +19,7 @@ def Start_PATH():
     '''初始化'''
     # 版本 数据库缓存 Api数据缓存 Log数据集 分隔符
     global Versions,AimeListCache,BgmAPIDataCache,TMDBAPIDataCache,LogData,Separator,Proxy,TgBotMsgData,PyPath
-    Versions = '3.2.3'
+    Versions = '3.2.4'
     AimeListCache = None
     BgmAPIDataCache = {}
     TMDBAPIDataCache = {}
@@ -432,7 +432,7 @@ def Auxiliary_FileType(FileName):
     for FileType in SuffixList:
         if match(FileType[::-1],FileName[::-1],flags=I) != None:
             try :
-                return SuffixList['FileType']
+                return SuffixList[FileType.lower()]
             except :
                 Auxiliary_Exit('文件类型不正确')
 
