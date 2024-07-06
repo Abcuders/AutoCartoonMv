@@ -4,6 +4,8 @@ USEMODULE = False # 使用模块
 NOTLOADEXTLIST = 'exmaple1', # 模块排除列表,格式 'exmaple1','exmaple2' + ... ,
 
 # NetConfig
+USEPROXY = True # 使用代理
+USESYSPROXY = True # 使用系统代理
 HTTPPROXY = '' # Http代理
 HTTPSPROXY = 'http://10.0.0.1:7890' # Https代理
 ALLPROXY = '' # 全部代理

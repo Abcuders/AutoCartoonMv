@@ -10,6 +10,7 @@ from ast import literal_eval # srt转化
 from zhconv import convert # 繁化简
 from urllib.parse import quote,unquote # url encode
 from requests import get,post,exceptions # 网络部分
+from urllib.request import getproxies  # 获取系统代理
 #from random import randint # 随机数生成
 #from threading import Thread # 多线程
 from importlib import import_module # 动态加载模块
@@ -19,7 +20,7 @@ def Start_PATH():
     '''初始化'''
     # 版本 数据库缓存 Api数据缓存 Log数据集 分隔符
     global Versions,AimeListCache,BgmAPIDataCache,TMDBAPIDataCache,LogData,Separator,Proxy,TgBotMsgData,PyPath
-    Versions = '3.2.4'
+    Versions = '3.3.5'
     AimeListCache = None
     BgmAPIDataCache = {}
     TMDBAPIDataCache = {}
@@ -28,8 +29,10 @@ def Start_PATH():
     TgBotMsgData = ''
     PyPath = __file__.replace('AutoAnimeMv.py','').strip(' ')
 
-    global USEMODULE,HTTPPROXY,HTTPSPROXY,ALLPROXY,USEBGMAPI,USETMDBAPI,USELINK,LINKFAILSUSEMOVEFLAGS,USETITLTOEP,PRINTLOGFLAG,RMLOGSFLAG,USEBOTFLAG,TIMELAPSE,SEEPSINGLECHARACTER,JELLYFINFORMAT,NOTLOADEXTLIST,MANDATORYCOVER,NETERRRECTRYTIMS
+    global USEMODULE,USEPROXY,USESYSPROXY,HTTPPROXY,HTTPSPROXY,ALLPROXY,USEBGMAPI,USETMDBAPI,USELINK,LINKFAILSUSEMOVEFLAGS,USETITLTOEP,PRINTLOGFLAG,RMLOGSFLAG,USEBOTFLAG,TIMELAPSE,SEEPSINGLECHARACTER,JELLYFINFORMAT,NOTLOADEXTLIST,MANDATORYCOVER,NETERRRECTRYTIMS
     USEMODULE = None
+    USEPROXY = False # 使用代理
+    USESYSPROXY = False # 使用系统代理
     HTTPPROXY = '' # Http代理
     HTTPSPROXY = '' # Https代理
     ALLPROXY = '' # 全部代理
@@ -325,7 +328,7 @@ def Auxiliary_UniformOTSTR(File):
 
     NewFile = convert(File,'zh-hans')# 繁化简
     NewUSTRFile = sub(r',|，| ','-',NewFile,flags=I) 
-    NewUSTRFile = sub(r'[^a-z0-9\s&/:：.\-\(\)（）《》\u4e00-\u9fa5\u3040-\u309F\u30A0-\u30FF\u31F0-\u31FF]','=',NewUSTRFile,flags=I)
+    NewUSTRFile = sub(r'[^a-z0-9\s&/:：.\-\(\)（）《》\u4e00-\u9fa5\u3040-\u309F\u30A0-\u30FF\u31F0-\u31FF°]','=',NewUSTRFile,flags=I)
     #异种剧集统一
     OtEpisodesMatchData = [r'第(\d{1,4})集',r'(\d{1,4})集',r'第(\d{1,4})话',r'(\d{1,4})END',r'(\d{1,4}) END',r'(\d{1,4})E']
     for i in OtEpisodesMatchData:
@@ -465,7 +468,7 @@ def Auxiliary_ScanDIR(Dir,Flag=0) -> list:
             Auxiliary_Log((f'发现{len(AssFileList)}个字幕文件 ==> {AssFileList}',f'发现{len(VDFileList)}个视频文件 ==> {VDFileList}'),'INFO')
             return VDFileList,AssFileList
         else:
-            Auxiliary_Log(f'发现{len(VDFileList)}个视频文件,没有发现字幕文件, ==> {VDFileList}','INFO')
+            Auxiliary_Log(f'发现{len(VDFileList)}个视频文件,没有发现字幕文件 ==> {VDFileList}','INFO')
             return VDFileList
     elif AssFileList != []:
         Auxiliary_Log((f'没有发现任何番剧视频文件,但发现{len(AssFileList)}个字幕文件 ==> {AssFileList}','只有字幕文件需要处理'),'INFO')
@@ -499,16 +502,19 @@ def Auxiliary_ASSFileCA(ASSFileName):
 
 def Auxiliary_PROXY(): 
     '''代理'''
-
-    if 'HTTPPROXY' in globals():
+    if USEPROXY == True:
         global HTTPPROXY
-        environ['http_proxy'] = HTTPPROXY
-    if 'HTTPSPROXY' in globals():
         global HTTPSPROXY
-        environ['https_proxy'] = HTTPSPROXY
-    if 'ALLPROXY' in globals():
         global ALLPROXY
-        environ['all_proxy'] = ALLPROXY
+        Auxiliary_Log('代理功能开启')
+        if USESYSPROXY == True:
+            Auxiliary_Log('使用系统代理')
+            HTTPPROXY,HTTPSPROXY,a = tuple(getproxies().values())
+        environ['http_proxy'] = HTTPPROXY 
+        environ['https_proxy'] = HTTPSPROXY 
+        environ['all_proxy'] = ALLPROXY 
+        
+        
 
 def Auxiliary_Http(Url,flag='GET',json=None):
     '''网络'''
