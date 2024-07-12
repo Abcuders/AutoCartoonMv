@@ -1,7 +1,8 @@
 [#Config]
-PRINTLOGFLAG = True # 打印log开关
+PRINTLOGFLAG = False # 打印log开关
 USEMODULE = False # 使用模块
 NOTLOADEXTLIST = 'exmaple1', # 模块排除列表,格式 'exmaple1','exmaple2' + ... ,
+USEANIMETAG = False # 使用番剧tag,带有anime标签的文件才会处理
 
 # NetConfig
 USEPROXY = True # 使用代理
@@ -12,6 +13,7 @@ ALLPROXY = '' # 全部代理
 USEBGMAPI = True # 使用BgmApi
 USETMDBAPI = True #使用TMDBApi
 NETERRRECTRYTIMS = 1 # 网络请求错误时的重试次数
+APIREQUESTSONLYUSECH = False # Api请求只搜索中文部分
 
 # File处理Config
 USELINK = True # 使用硬链接开关
