@@ -1,5 +1,5 @@
 [#Config]
-PRINTLOGFLAG = False # 打印log开关
+#PRINTLOGFLAG = False # 打印log开关
 USEMODULE = False # 使用模块
 NOTLOADEXTLIST = 'exmaple1', # 模块排除列表,格式 'exmaple1','exmaple2' + ... ,
 USEANIMETAG = False # 使用番剧tag,带有anime标签的文件才会处理

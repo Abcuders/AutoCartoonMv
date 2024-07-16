@@ -61,7 +61,7 @@
 
 # 相关群组
 
-交流/工作群: [Telegram](https://t.me/AutoAnimeMv)
+交流/工作群: [Telegram](https://t.me/+eaHf3zVgIFQzNDQ1)
 
 # ⭐ 贡献者 ✨
 

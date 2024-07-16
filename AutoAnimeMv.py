@@ -16,11 +16,11 @@ from urllib.request import getproxies  # 获取系统代理
 from importlib import import_module # 动态加载模块
 #Start 开始部分进行程序的初始化 
 
-def Start_PATH(**kwargs):
+def Start_PATH(**kwargs) -> dict:
     '''初始化'''
     # 版本 数据库缓存 Api数据缓存 Log数据集 分隔符
     global Versions,AimeListCache,BgmAPIDataCache,TMDBAPIDataCache,LogData,Separator,Proxy,TgBotMsgData,PyPath
-    Versions = '3.4.6'
+    Versions = '3.(4.5).6'
     AimeListCache = None
     BgmAPIDataCache = {}
     TMDBAPIDataCache = {}
@@ -64,6 +64,7 @@ def Start_PATH(**kwargs):
     if kwargs != {}:
         for i in kwargs:
             exec(f'global {i};{i} = {kwargs[i]}')
+    return globals()
 
 def AUxiliary_GetTag():
     '''获取Tag信息,判断处理模式'''
@@ -546,7 +547,7 @@ def Auxiliary_PROXY():
         Auxiliary_Log('代理功能开启')
         if USESYSPROXY == True:
             Auxiliary_Log('使用系统代理')
-            HTTPPROXY,HTTPSPROXY,a = tuple(getproxies().values())
+            HTTPPROXY,HTTPSPROXY,a = X if (X:= tuple(getproxies().values())) != () else ('','','')
         environ['http_proxy'] = HTTPPROXY 
         environ['https_proxy'] = HTTPSPROXY 
         environ['all_proxy'] = ALLPROXY 
