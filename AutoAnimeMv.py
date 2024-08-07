@@ -569,12 +569,12 @@ def Auxiliary_Http(Url,flag='GET',json=None):
             if HttpData.status_code == 200:
                 return HttpData.text.replace(r'\/',r'/')
         except exceptions.ConnectionError:
-            Auxiliary_Log(f'访问 {Url} 失败,未能获取到内容,请检查您是否启用了系统代理,如是则您应该在此工具中配置代理信息,否则您则需要检查您的网络能否访问','WARING') 
+            Auxiliary_Log(f'访问 {Url} 失败,未能获取到内容,请检查您是否启用了系统代理,如是则您应该在此工具中配置代理信息,否则您则需要检查您的网络能否访问','WARNING') 
         except Exception as err:
-            Auxiliary_Log(f'访问 {Url} 失败,未能获取到内容,请检查您的网络 {err}','WARING')    
+            Auxiliary_Log(f'访问 {Url} 失败,未能获取到内容,请检查您的网络 {err}','WARNING')    
         else:
-            Auxiliary_Log('HttpData Status Code != 200','WARING')
-        Auxiliary_Log(f'第{i+1}/{int(NETERRRECTRYTIMS)+1}次尝试失败','WARING')
+            Auxiliary_Log('HttpData Status Code != 200','WARNING')
+        Auxiliary_Log(f'第{i+1}/{int(NETERRRECTRYTIMS)+1}次尝试失败','WARNING')
     Auxiliary_Exit('网络错误导致番剧处理失败')
 
 def Auxiliary_Api(Name):   
